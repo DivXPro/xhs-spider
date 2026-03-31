@@ -1,0 +1,28 @@
+{
+  "name": "xhs-spider",
+  "version": "1.0.0",
+  "description": "XHS (小红书) data collection tool in TypeScript",
+  "main": "dist/index.js",
+  "bin": {
+    "xhs": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "cli": "tsc && node dist/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "commander": "^11.1.0",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.3.1",
+    "jsdom": "^26.0.0"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.0",
+    "@types/crypto-js": "^4.2.1",
+    "@types/jsdom": "^21.1.6",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}
