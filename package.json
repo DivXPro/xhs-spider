@@ -2,6 +2,10 @@
   "name": "xhs-spider",
   "version": "1.1.0",
   "description": "XHS (小红书) data collection tool in TypeScript",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:DivXPro/xhs-spider.git"
+  },
   "main": "dist/index.js",
   "bin": {
     "xhs": "dist/index.js"
