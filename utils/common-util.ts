@@ -2,10 +2,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BasePath } from '../types';
 
-// Load environment from .env file
+// Load environment from .env file and environment variables
 export function loadEnv(): { cookies: string | undefined } {
-  const envPath = path.join(process.cwd(), '..', '.env');
-  const altEnvPath = path.join(process.cwd(), '.env');
+  // 1. 环境变量（最高优先级，用于生产环境）
+  if (process.env.XHS_COOKIES) {
+    return { cookies: process.env.XHS_COOKIES };
+  }
+
+  // 2. 当前目录的 .env 文件
+  const envPath = path.join(process.cwd(), '.env');
+  // 3. 父目录的 .env 文件
+  const altEnvPath = path.join(process.cwd(), '..', '.env');
 
   let envContent = '';
   try {
@@ -18,7 +25,7 @@ export function loadEnv(): { cookies: string | undefined } {
     // Ignore errors
   }
 
-  const cookiesMatch = envContent.match(/COOKIES=(.+)/);
+  const cookiesMatch = envContent.match(/XHS_COOKIES=(.+)/);
   return {
     cookies: cookiesMatch ? cookiesMatch[1].trim() : undefined,
   };

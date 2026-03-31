@@ -1,6 +1,6 @@
 {
   "name": "xhs-spider",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "XHS (小红书) data collection tool in TypeScript",
   "main": "dist/index.js",
   "bin": {
