@@ -26,5 +26,8 @@ Thumbs.db
 *.swp
 *.swo
 
+# Agent
+.claude
+
 # Lock files (optional - uncomment if you don't want to track package-lock.json)
 # package-lock.json
