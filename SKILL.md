@@ -1,3 +1,8 @@
+---
+name: xhs-spider
+description: 小红书（XHS）数据采集 CLI 工具，支持笔记抓取、用户数据采集、内容搜索
+---
+
 # xhs-spider
 
 小红书（XHS）数据采集 CLI 工具
