@@ -16,7 +16,7 @@ const program = new Command();
 program
   .name('xhs')
   .description('小红书数据采集CLI工具')
-  .version('1.0.0')
+  .version('1.2.1')
   .option('-f, --format <format>', '输出格式: json(默认), table, csv, md', 'json');
 
 const formatters: Record<string, Formatter> = {
