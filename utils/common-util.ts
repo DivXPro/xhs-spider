@@ -31,22 +31,11 @@ export function loadEnv(): { cookies: string | undefined } {
   };
 }
 
-function ensureDir(dirPath: string): void {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-    console.log(`创建目录 ${dirPath}`);
-  }
-}
-
 export function init(): { cookiesStr: string | undefined; basePath: BasePath } {
-  const rootDir = path.join(__dirname, '..', '..', 'datas');
+  const rootDir = path.join(process.cwd(), 'datas');
   const mediaBasePath = path.join(rootDir, 'media_datas');
   const excelBasePath = path.join(rootDir, 'excel_datas');
   const jsonBasePath = path.join(rootDir, 'json_datas');
-
-  ensureDir(mediaBasePath);
-  ensureDir(excelBasePath);
-  ensureDir(jsonBasePath);
 
   const { cookies } = loadEnv();
 

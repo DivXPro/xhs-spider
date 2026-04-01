@@ -51,4 +51,4 @@ Contains encrypted/obfuscated JavaScript for XHS request signing (x_b3_Traceid, 
 - Cookies are required for all API calls. Set via `-c` flag or `COOKIES=...` in `.env` file at parent directory
 - Request signing uses obfuscated JS in `static/` - do not modify these files
 - `handleNoteInfo()` normalizes nested API responses into flat `NoteInfo` objects
-- Data download saves to `datas/media_datas/{nickname_userId}/{title_noteId}/`
+- Data download saves to `datas/media_datas/{note_id}/`

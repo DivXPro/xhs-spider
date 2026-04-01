@@ -261,15 +261,7 @@ export async function downloadNote(
   saveChoice: string
 ): Promise<string> {
   const noteId = noteInfo.note_id;
-  const userId = noteInfo.user_id;
-  const title = normStr(noteInfo.title).substring(0, 40);
-  const nickname = normStr(noteInfo.nickname).substring(0, 20);
-
-  if (!title) {
-    // Use '无标题' if title is empty
-  }
-
-  const savePath = path.join(pathStr, `${nickname}_${userId}`, `${title}_${noteId}`);
+  const savePath = path.join(pathStr, noteId);
   checkAndCreatePath(savePath);
 
   // Save info.json

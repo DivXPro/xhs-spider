@@ -191,7 +191,7 @@ xhs search "旅游攻略" -n 30 -f md > results.md
 
 ## Data Output
 
-下载的媒体文件保存在 `datas/media_datas/{昵称}_{用户ID}/{标题}_{笔记ID}/` 目录，包含：
+下载的媒体文件保存在 `datas/media_datas/{笔记ID}/` 目录，包含：
 - `info.json` - 笔记完整信息
 - `detail.txt` - 笔记文本详情
 - `image_0.jpg`, `image_1.jpg` - 图片
