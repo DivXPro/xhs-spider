@@ -30,6 +30,10 @@ function getFormatter(format?: string): Formatter {
   return formatters[format || 'json'] || formatters.json;
 }
 
+function resolveFormat(format?: string): string {
+  return format || program.opts().format || 'json';
+}
+
 // Initialize
 const { cookiesStr, basePath } = init();
 const xhsApis = new XHSApis();
@@ -41,7 +45,7 @@ program
   .argument('<url>', '笔记URL')
   .option('-c, --cookies <cookies>', 'XHS cookies字符串')
   .option('--download', '是否下载笔记媒体文件')
-  .option('-f, --format <format>', '输出格式: json, table, csv, md', 'json')
+  .option('-f, --format <format>', '输出格式: json, table, csv, md')
   .action(async (url: string, options: { cookies?: string; download?: boolean; format?: string }) => {
     const cookies = options.cookies || cookiesStr;
     if (!cookies) {
@@ -64,13 +68,12 @@ program
 
       noteData.url = url;
       const noteInfo = handleNoteInfo(noteData);
-
       if (options.download) {
         await downloadNote(noteInfo, basePath.media, 'all');
       }
 
       const noteList = [noteInfo];
-      console.log(getFormatter(options.format).format(noteList));
+      console.log(getFormatter(resolveFormat(options.format)).format(noteList));
     } catch (e: any) {
       console.error(JSON.stringify({ error: true, message: `处理笔记数据失败: ${e.message}` }));
       process.exit(1);
@@ -85,7 +88,7 @@ program
   .option('-c, --cookies <cookies>', 'XHS cookies字符串')
   .option('-n, --num <number>', '获取笔记数量', '100')
   .option('--download', '是否下载笔记媒体文件')
-  .option('-f, --format <format>', '输出格式: json, table, csv, md', 'json')
+  .option('-f, --format <format>', '输出格式: json, table, csv, md')
   .action(async (url: string, options: { cookies?: string; num?: string; download?: boolean; format?: string }) => {
     const cookies = options.cookies || cookiesStr;
     if (!cookies) {
@@ -126,7 +129,7 @@ program
       }
     }
 
-    console.log(getFormatter(options.format).format(noteList));
+    console.log(getFormatter(resolveFormat(options.format)).format(noteList));
   });
 
 // Search command
@@ -140,7 +143,7 @@ program
   .option('--type <0|1|2>', '笔记类型: 0=不限, 1=视频笔记, 2=普通笔记', '0')
   .option('--time <0|1|2|3>', '笔记时间: 0=不限, 1=一天内, 2=一周内, 3=半年内', '0')
   .option('--download', '是否下载笔记媒体文件')
-  .option('-f, --format <format>', '输出格式: json, table, csv, md', 'json')
+  .option('-f, --format <format>', '输出格式: json, table, csv, md')
   .action(async (query: string, options: {
     cookies?: string;
     num?: string;
@@ -197,7 +200,7 @@ program
       }
     }
 
-    console.log(getFormatter(options.format).format(noteList));
+    console.log(getFormatter(resolveFormat(options.format)).format(noteList));
   });
 
 // Creator command
@@ -205,7 +208,7 @@ program
   .command('creator')
   .description('获取创作者发布的笔记')
   .option('-c, --cookies <cookies>', 'XHS cookies字符串')
-  .option('-f, --format <format>', '输出格式: json, table, csv, md', 'json')
+  .option('-f, --format <format>', '输出格式: json, table, csv, md')
   .action(async (options: { cookies?: string; format?: string }) => {
     const cookies = options.cookies || cookiesStr;
     if (!cookies) {
@@ -221,7 +224,7 @@ program
       process.exit(1);
     }
 
-    console.log(getFormatter(options.format).format((result.data || []) as any));
+    console.log(getFormatter(resolveFormat(options.format)).format((result.data || []) as any));
   });
 
 program.parse();

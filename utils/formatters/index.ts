@@ -11,6 +11,11 @@ export interface Formatter {
  * 字段映射
  */
 export const FIELD_KEYS: Record<string, keyof NoteInfo> = {
+  note_id: 'note_id',
+  note_type: 'note_type',
+  user_id: 'user_id',
+  home_url: 'home_url',
+  avatar: 'avatar',
   title: 'title',
   desc: 'desc',
   user: 'nickname',
@@ -19,7 +24,11 @@ export const FIELD_KEYS: Record<string, keyof NoteInfo> = {
   comments: 'comment_count',
   collects: 'collected_count',
   shares: 'share_count',
+  video_cover: 'video_cover',
+  video_addr: 'video_addr',
+  image_list: 'image_list',
   tags: 'tags',
+  ip_location: 'ip_location',
   url: 'note_url',
 };
 
@@ -27,6 +36,11 @@ export const FIELD_KEYS: Record<string, keyof NoteInfo> = {
  * 字段标签
  */
 export const FIELD_LABELS: Record<string, string> = {
+  note_id: '笔记ID',
+  note_type: '笔记类型',
+  user_id: '用户ID',
+  home_url: '主页链接',
+  avatar: '头像链接',
   title: '标题',
   desc: '描述',
   user: '用户',
@@ -35,7 +49,11 @@ export const FIELD_LABELS: Record<string, string> = {
   comments: '评论',
   collects: '收藏',
   shares: '分享',
+  video_cover: '视频封面',
+  video_addr: '视频地址',
+  image_list: '图片列表',
   tags: '标签',
+  ip_location: 'IP归属地',
   url: '链接',
 };
 
