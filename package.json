@@ -1,6 +1,6 @@
 {
   "name": "xhs-spider",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "XHS (小红书) data collection tool in TypeScript",
   "repository": {
     "type": "git",

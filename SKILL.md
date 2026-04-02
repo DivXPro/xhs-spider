@@ -40,6 +40,29 @@ xhs --help
 
 ---
 
+## Environment Setup
+
+执行 CLI 前需要从 `.claude/settings.env` 注入 `XHS_COOKIES` 环境变量。
+
+### 直接执行前导入
+
+**Linux / macOS:**
+```bash
+export "$(grep '^XHS_COOKIES=' .claude/settings.env)" && XHS_COOKIES="${XHS_COOKIES//\"/}" && xhs note "url"
+```
+
+**Windows (CMD):**
+```cmd
+for /f "tokens=1,2 delims==" %i in ('findstr XHS_COOKIES .claude\settings.env') do @set %i=%~j && xhs note "url"
+```
+
+**Windows (PowerShell):**
+```powershell
+$c = Get-Content .claude/settings.env | Where-Object { $_ -match '^XHS_COOKIES=' }; $p = $c -split '=', 2; $v = $p[1].Trim([char]34); [Environment]::SetEnvironmentVariable($p[0], $v, 'Process'); xhs note "url"
+```
+
+---
+
 ## Quick Start
 
 ```bash
