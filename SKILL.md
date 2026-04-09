@@ -28,6 +28,15 @@ Invoke this skill when:
 
 ---
 
+## Related Skills
+
+**评论商业价值分析** - 位于 `reference/SKILL-comment-analysis.md`
+- 分析小红书评论数据
+- 生成量化汇总报告
+- 包含情感分析、话题分类、购买意向等维度
+
+---
+
 ## Installation
 
 ```bash
