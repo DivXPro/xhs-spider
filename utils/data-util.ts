@@ -2,7 +2,22 @@ import * as fs from 'fs';
 import * as path from 'path';
 import https from 'https';
 import http from 'http';
+import yaml from 'js-yaml';
 import { NoteInfo, UserInfo, CommentInfo } from '../types';
+
+// Read note info from local file
+export function readNoteFromLocal(noteId: string, basePath: string): NoteInfo | null {
+  const notePath = path.join(basePath, noteId, 'note.yaml');
+  if (fs.existsSync(notePath)) {
+    try {
+      const data = fs.readFileSync(notePath, 'utf-8');
+      return yaml.load(data) as NoteInfo;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 // Normalize string for filename
 export function normStr(str: string): string {
@@ -228,30 +243,96 @@ export async function downloadMedia(
   await downloadFile(url, filePath, type === 'video');
 }
 
-// Save note detail to txt file
+// Save note detail to markdown file
 export function saveNoteDetail(note: NoteInfo, pathStr: string): void {
-  const filePath = path.join(pathStr, 'detail.txt');
-  let content = `笔记id: ${note.note_id}\n`;
-  content += `笔记url: ${note.note_url}\n`;
-  content += `笔记类型: ${note.note_type}\n`;
-  content += `用户id: ${note.user_id}\n`;
-  content += `用户主页url: ${note.home_url}\n`;
-  content += `昵称: ${note.nickname}\n`;
-  content += `头像url: ${note.avatar}\n`;
-  content += `标题: ${note.title}\n`;
-  content += `描述: ${note.desc}\n`;
-  content += `点赞数量: ${note.liked_count}\n`;
-  content += `收藏数量: ${note.collected_count}\n`;
-  content += `评论数量: ${note.comment_count}\n`;
-  content += `分享数量: ${note.share_count}\n`;
-  content += `视频封面url: ${note.video_cover || ''}\n`;
-  content += `视频地址url: ${note.video_addr || ''}\n`;
-  content += `图片地址url列表: ${JSON.stringify(note.image_list)}\n`;
-  content += `标签: ${JSON.stringify(note.tags)}\n`;
-  content += `上传时间: ${note.upload_time}\n`;
-  content += `ip归属地: ${note.ip_location}\n`;
+  const filePath = path.join(pathStr, 'NOTE.md');
 
-  fs.writeFileSync(filePath, content, 'utf-8');
+  const lines: string[] = [];
+
+  // Title
+  lines.push(`# ${note.title || '无标题'}`);
+  lines.push('');
+
+  // Basic info
+  lines.push('## 基本信息');
+  lines.push('');
+  lines.push(`- **类型**: ${note.note_type}`);
+  lines.push(`- **发布时间**: ${note.upload_time}`);
+  lines.push(`- **IP归属地**: ${note.ip_location}`);
+  lines.push('');
+
+  // Author info
+  lines.push('## 作者信息');
+  lines.push('');
+  lines.push(`- **昵称**: ${note.nickname}`);
+  lines.push(`- **主页**: ${note.home_url}`);
+  lines.push('');
+
+  // Interaction stats
+  lines.push('## 互动数据');
+  lines.push('');
+  lines.push(`- 点赞: ${note.liked_count}`);
+  lines.push(`- 收藏: ${note.collected_count}`);
+  lines.push(`- 评论: ${note.comment_count}`);
+  lines.push(`- 分享: ${note.share_count}`);
+  lines.push('');
+
+  // Description
+  if (note.desc) {
+    lines.push('## 正文');
+    lines.push('');
+    lines.push(note.desc);
+    lines.push('');
+  }
+
+  // Media
+  if (note.note_type === '图集' && note.image_list.length > 0) {
+    lines.push('## 图片');
+    lines.push('');
+    for (let i = 0; i < note.image_list.length; i++) {
+      lines.push(`![图片${i + 1}](${note.image_list[i]})`);
+    }
+    lines.push('');
+  } else if (note.note_type === '视频') {
+    if (note.video_cover) {
+      lines.push('## 视频封面');
+      lines.push('');
+      lines.push(`![视频封面](${note.video_cover})`);
+      lines.push('');
+    }
+    if (note.video_addr) {
+      lines.push('## 视频');
+      lines.push('');
+      lines.push(`[点击观看视频](${note.video_addr})`);
+      lines.push('');
+    }
+  }
+
+  // Tags
+  if (note.tags.length > 0) {
+    lines.push('## 标签');
+    lines.push('');
+    lines.push(note.tags.map(t => `#${t}`).join(' '));
+    lines.push('');
+  }
+
+  // Source link
+  lines.push('---');
+  lines.push('');
+  lines.push(`[原文链接](${note.note_url})`);
+
+  fs.writeFileSync(filePath, lines.join('\n'), 'utf-8');
+}
+
+// Save comments to yaml file
+export function saveComments(noteId: string, comments: CommentInfo[], pathStr: string): string {
+  const savePath = path.join(pathStr, noteId);
+  checkAndCreatePath(savePath);
+
+  const commentsPath = path.join(savePath, 'comments.yaml');
+  fs.writeFileSync(commentsPath, yaml.dump(comments), 'utf-8');
+
+  return savePath;
 }
 
 // Download note with all media
@@ -264,9 +345,9 @@ export async function downloadNote(
   const savePath = path.join(pathStr, noteId);
   checkAndCreatePath(savePath);
 
-  // Save info.json
-  const infoJsonPath = path.join(savePath, 'info.json');
-  fs.writeFileSync(infoJsonPath, JSON.stringify(noteInfo), 'utf-8');
+  // Save note.yaml
+  const noteYamlPath = path.join(savePath, 'note.yaml');
+  fs.writeFileSync(noteYamlPath, yaml.dump(noteInfo), 'utf-8');
 
   // Save detail.txt
   saveNoteDetail(noteInfo, savePath);

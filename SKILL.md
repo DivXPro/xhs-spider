@@ -86,6 +86,7 @@ xhs search "美食" -n 20 -f table
 | `xhs user <url>` | 获取用户的所有笔记 |
 | `xhs search <query>` | 搜索笔记 |
 | `xhs creator` | 获取创作者发布的笔记 |
+| `xhs comment <url>` | 获取笔记的评论 |
 
 ---
 
@@ -104,6 +105,7 @@ xhs search "美食" -n 20 -f table
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
 | `--download` | 下载笔记的图片/视频 | false |
+| `--refresh` | 强制从网络重新获取最新数据 | false |
 
 ### user 命令
 
@@ -139,6 +141,12 @@ xhs search "美食" -n 20 -f table
 - `1` - 一天内
 - `2` - 一周内
 - `3` - 半年内
+
+### comment 命令
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `--download` | 保存评论到本地 YAML 文件 | false |
 
 ---
 
@@ -194,6 +202,12 @@ xhs note "https://www.xiaohongshu.com/explore/xxx"
 # 表格形式显示
 xhs note "https://www.xiaohongshu.com/explore/xxx" -f table
 
+# 获取笔记详情（强制刷新）
+xhs note "https://www.xiaohongshu.com/explore/xxx" --refresh
+
+# 下载笔记媒体
+xhs note "https://www.xiaohongshu.com/explore/xxx" --download
+
 # 搜索最新笔记
 xhs search "榴莲" -n 20 --sort 1
 
@@ -203,8 +217,11 @@ xhs search "美食" --type 1 --sort 2 -f csv
 # 获取用户笔记
 xhs user "https://www.xiaohongshu.com/user/profile/xxx" -n 50
 
-# 下载笔记媒体
-xhs note "https://www.xiaohongshu.com/explore/xxx" --download
+# 获取笔记评论
+xhs comment "https://www.xiaohongshu.com/explore/xxx"
+
+# 获取评论并保存到本地
+xhs comment "https://www.xiaohongshu.com/explore/xxx" --download
 
 # Markdown 格式导出
 xhs search "旅游攻略" -n 30 -f md > results.md
@@ -215,7 +232,33 @@ xhs search "旅游攻略" -n 30 -f md > results.md
 ## Data Output
 
 下载的媒体文件保存在 `datas/media_datas/{笔记ID}/` 目录，包含：
-- `info.json` - 笔记完整信息
-- `detail.txt` - 笔记文本详情
+- `note.yaml` - 笔记完整信息（YAML 格式，程序处理用）
+- `NOTE.md` - 笔记 Markdown 详情
+- `comments.yaml` - 评论数据（使用 `--download` 参数时生成）
 - `image_0.jpg`, `image_1.jpg` - 图片
 - `video.mp4` - 视频（如果有）
+
+---
+
+## Data Fetching Strategy
+
+**获取笔记数据时，优先从本地数据文件夹读取，除非明确要求获取最新数据。**
+
+### 读取优先级
+
+1. **优先读取本地数据** - 当笔记已下载过时，优先从 `datas/media_datas/{笔记ID}/note.yaml` 读取
+2. **按需抓取最新数据** - 仅当用户明确要求（添加 `--refresh`、`--force` 或 `--latest` 等参数）时，才重新从网络抓取
+
+### 适用场景
+
+- 查看历史下载的笔记数据
+- 避免重复请求，提高响应速度
+- 减少对小红书服务器的压力
+
+### 强制刷新
+
+如需获取最新数据，请使用 `--refresh` 参数：
+
+```bash
+xhs note "https://www.xiaohongshu.com/explore/xxx" --refresh
+```

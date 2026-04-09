@@ -4,7 +4,8 @@ import { Command } from 'commander';
 import { XHSApis } from './apis/xhs-pc-apis';
 import { XHSCreatorApis } from './apis/xhs-creator-apis';
 import { init } from './utils/common-util';
-import { handleNoteInfo, downloadNote } from './utils/data-util';
+import { handleNoteInfo, downloadNote, readNoteFromLocal, saveComments } from './utils/data-util';
+import type { NoteInfo } from './types';
 import { JsonFormatter } from './utils/formatters/json';
 import { TableFormatter } from './utils/formatters/table';
 import { CsvFormatter } from './utils/formatters/csv';
@@ -45,39 +46,54 @@ program
   .argument('<url>', '笔记URL')
   .option('-c, --cookies <cookies>', 'XHS cookies字符串')
   .option('--download', '是否下载笔记媒体文件')
+  .option('--refresh', '强制从网络重新获取最新数据')
   .option('-f, --format <format>', '输出格式: json, table, csv, md')
-  .action(async (url: string, options: { cookies?: string; download?: boolean; format?: string }) => {
-    const cookies = options.cookies || cookiesStr;
-    if (!cookies) {
-      console.error(JSON.stringify({ error: true, message: '未提供cookies' }));
-      process.exit(1);
+  .action(async (url: string, options: { cookies?: string; download?: boolean; refresh?: boolean; format?: string }) => {
+    // Extract note ID from URL
+    const noteIdMatch = url.match(/explore\/([^?]+)/);
+    const noteId = noteIdMatch ? noteIdMatch[1] : '';
+
+    // Try to read from local first (unless --refresh is specified)
+    let noteInfo: NoteInfo | null = null;
+    if (!options.refresh && noteId) {
+      noteInfo = readNoteFromLocal(noteId, basePath.media);
     }
 
-    const result = await xhsApis.getNoteInfo(url, cookies);
-    if (!result.success) {
-      console.error(JSON.stringify({ error: true, message: `获取笔记失败: ${result.msg}` }));
-      process.exit(1);
-    }
-
-    try {
-      const noteData = result.data?.data?.items?.[0];
-      if (!noteData) {
-        console.error(JSON.stringify({ error: true, message: '笔记数据为空' }));
+    // Fetch from network if no local data or --refresh is specified
+    if (!noteInfo) {
+      const cookies = options.cookies || cookiesStr;
+      if (!cookies) {
+        console.error(JSON.stringify({ error: true, message: '未提供cookies' }));
         process.exit(1);
       }
 
-      noteData.url = url;
-      const noteInfo = handleNoteInfo(noteData);
-      if (options.download) {
-        await downloadNote(noteInfo, basePath.media, 'all');
+      const result = await xhsApis.getNoteInfo(url, cookies);
+      if (!result.success) {
+        console.error(JSON.stringify({ error: true, message: `获取笔记失败: ${result.msg}` }));
+        process.exit(1);
       }
 
-      const noteList = [noteInfo];
-      console.log(getFormatter(resolveFormat(options.format)).format(noteList));
-    } catch (e: any) {
-      console.error(JSON.stringify({ error: true, message: `处理笔记数据失败: ${e.message}` }));
-      process.exit(1);
+      try {
+        const noteData = result.data?.data?.items?.[0];
+        if (!noteData) {
+          console.error(JSON.stringify({ error: true, message: '笔记数据为空' }));
+          process.exit(1);
+        }
+
+        noteData.url = url;
+        noteInfo = handleNoteInfo(noteData);
+      } catch (e: any) {
+        console.error(JSON.stringify({ error: true, message: `处理笔记数据失败: ${e.message}` }));
+        process.exit(1);
+      }
     }
+
+    if (options.download) {
+      await downloadNote(noteInfo, basePath.media, 'all');
+    }
+
+    const noteList = [noteInfo];
+    console.log(getFormatter(resolveFormat(options.format)).format(noteList));
   });
 
 // User command
@@ -225,6 +241,42 @@ program
     }
 
     console.log(getFormatter(resolveFormat(options.format)).format((result.data || []) as any));
+  });
+
+// Comment command
+program
+  .command('comment')
+  .description('获取笔记的评论')
+  .argument('<url>', '笔记URL')
+  .option('-c, --cookies <cookies>', 'XHS cookies字符串')
+  .option('--download', '是否保存评论到本地')
+  .option('-f, --format <format>', '输出格式: json, table, csv, md')
+  .action(async (url: string, options: { cookies?: string; download?: boolean; format?: string }) => {
+    const cookies = options.cookies || cookiesStr;
+    if (!cookies) {
+      console.error(JSON.stringify({ error: true, message: '未提供cookies' }));
+      process.exit(1);
+    }
+
+    // Extract note ID from URL
+    const noteIdMatch = url.match(/explore\/([^?]+)/);
+    const noteId = noteIdMatch ? noteIdMatch[1] : '';
+
+    const result = await xhsApis.getNoteAllOutComment(url, cookies);
+    if (!result.success) {
+      console.error(JSON.stringify({ error: true, message: `获取评论失败: ${result.msg}` }));
+      process.exit(1);
+    }
+
+    const comments = result.data || [];
+
+    // Save comments to local file if --download is specified
+    if (options.download && noteId) {
+      const savePath = saveComments(noteId, comments, basePath.media);
+      console.log(`评论已保存至 ${savePath}/comments.yaml`);
+    }
+
+    console.log(JSON.stringify(comments, null, 2));
   });
 
 program.parse();
