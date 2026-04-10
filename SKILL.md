@@ -51,12 +51,20 @@ xhs --help
 
 ## Environment Setup
 
-执行 CLI 前需要从 `.claude/settings.env` 注入 `XHS_COOKIES` 环境变量。
+执行 CLI 前需要从配置文件读取 `XHS_COOKIES` 并注入环境变量。
 
-### 直接执行前导入
+### 配置文件格式
+
+`.claude/settings.env` 文件内容：
+```
+XHS_COOKIES="你的小红书cookies字符串"
+```
+
+### 自动注入环境变量
 
 **Linux / macOS:**
 ```bash
+# 先导入环境变量，再执行命令
 export "$(grep '^XHS_COOKIES=' .claude/settings.env)" && XHS_COOKIES="${XHS_COOKIES//\"/}" && xhs note "url"
 ```
 

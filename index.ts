@@ -35,6 +35,20 @@ function resolveFormat(format?: string): string {
   return format || program.opts().format || 'json';
 }
 
+// Check if error indicates request blocking (406, 401, 403, etc.)
+function isBlockingError(result: any): boolean {
+  if (!result.success) {
+    const msg = result.msg || '';
+    const code = result.code || '';
+    // 406 Not Acceptable, 401 Unauthorized, 403 Forbidden
+    if (msg.includes('406') || msg.includes('401') || msg.includes('403') ||
+        code.includes('406') || code.includes('401') || code.includes('403')) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Initialize
 const { cookiesStr, basePath } = init();
 const xhsApis = new XHSApis();
@@ -139,6 +153,13 @@ program
       for (const simpleNote of batch) {
         const noteUrl = `https://www.xiaohongshu.com/explore/${simpleNote.note_id}?xsec_token=${simpleNote.xsec_token}`;
         const noteResult = await xhsApis.getNoteInfo(noteUrl, cookies);
+
+        // Check for blocking error
+        if (isBlockingError(noteResult)) {
+          console.error(JSON.stringify({ error: true, message: `请求被拦截 (${noteResult.msg})，停止后续请求` }));
+          process.exit(1);
+        }
+
         if (noteResult.success) {
           try {
             const noteData = noteResult.data?.data?.items?.[0];
@@ -222,6 +243,13 @@ program
       for (const note of batch) {
         const noteUrl = `https://www.xiaohongshu.com/explore/${note.id}?xsec_token=${note.xsec_token}`;
         const noteResult = await xhsApis.getNoteInfo(noteUrl, cookies);
+
+        // Check for blocking error
+        if (isBlockingError(noteResult)) {
+          console.error(JSON.stringify({ error: true, message: `请求被拦截 (${noteResult.msg})，停止后续请求` }));
+          process.exit(1);
+        }
+
         if (noteResult.success) {
           try {
             const noteData = noteResult.data?.data?.items?.[0];

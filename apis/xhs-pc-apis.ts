@@ -18,10 +18,32 @@ export interface ApiResult<T = any> {
   data?: T;
 }
 
+const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36';
+
+const BROWSER_HEADERS: Record<string, string> = {
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Referer': 'https://www.xiaohongshu.com/',
+  'Origin': 'https://www.xiaohongshu.com',
+  'sec-ch-ua': '"Chromium";v="146", "Not.A/Brand";v="24"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"macOS"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+};
+
 function cookiesToHeader(cookies: Record<string, string>): string {
   return Object.entries(cookies)
     .map(([key, value]) => `${key}=${value}`)
     .join('; ');
+}
+
+function setHeaders(headers: Record<string, string>, cookies: Record<string, string>): void {
+  headers['Cookie'] = cookiesToHeader(cookies);
+  headers['User-Agent'] = USER_AGENT;
+  Object.assign(headers, BROWSER_HEADERS);
 }
 
 export class XHSApis {
@@ -45,7 +67,7 @@ export class XHSApis {
       await this.randomDelay();
       const api = '/api/sns/web/v1/homefeed/category';
       const { headers, cookies } = generateRequestParams(cookiesStr, api, '', 'GET');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.get(this.baseUrl + api, { headers, ...this.getProxyConfig(proxies) });
       const resJson = response.data;
       return { success: resJson.success, msg: resJson.msg, data: resJson };
@@ -80,7 +102,7 @@ export class XHSApis {
         need_filter_image: false,
       };
       const { headers, cookies, data: transData } = generateRequestParams(cookiesStr, api, data, 'POST');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.post(this.baseUrl + api, JSON.parse(transData), {
         headers,
         ...this.getProxyConfig(proxies),
@@ -142,7 +164,7 @@ export class XHSApis {
       const params = { target_user_id: userId };
       const spliceApi = spliceStr(api, params);
       const { headers, cookies } = generateRequestParams(cookiesStr, spliceApi, '', 'GET');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.get(this.baseUrl + spliceApi, { headers, ...this.getProxyConfig(proxies) });
       const resJson = response.data;
       return { success: resJson.success, msg: resJson.msg, data: resJson };
@@ -159,7 +181,7 @@ export class XHSApis {
       await this.randomDelay();
       const api = '/api/sns/web/v1/user/selfinfo';
       const { headers, cookies } = generateRequestParams(cookiesStr, api, '', 'GET');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.get(this.baseUrl + api, { headers, ...this.getProxyConfig(proxies) });
       const resJson = response.data;
       return { success: resJson.success, msg: resJson.msg, data: resJson };
@@ -189,7 +211,7 @@ export class XHSApis {
       };
       const spliceApi = spliceStr(api, params);
       const { headers, cookies } = generateRequestParams(cookiesStr, spliceApi, '', 'GET');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.get(this.baseUrl + spliceApi, { headers, ...this.getProxyConfig(proxies) });
       const resJson = response.data;
       return { success: resJson.success, msg: resJson.msg, data: resJson };
@@ -262,7 +284,7 @@ export class XHSApis {
         xsec_token: kvDist['xsec_token'],
       };
       const { headers, cookies, data: transData } = generateRequestParams(cookiesStr, api, data, 'POST');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.post(this.baseUrl + api, JSON.parse(transData), {
         headers,
         ...this.getProxyConfig(proxies),
@@ -338,7 +360,7 @@ export class XHSApis {
         image_formats: ['jpg', 'webp', 'avif'],
       };
       const { headers, cookies, data: transData } = generateRequestParams(cookiesStr, api, data, 'POST');
-      headers['Cookie'] = cookiesToHeader(cookies);
+      setHeaders(headers, cookies);
       const response = await axios.post(this.baseUrl + api, JSON.parse(transData), {
         headers,
         ...this.getProxyConfig(proxies),
@@ -422,7 +444,7 @@ export class XHSApis {
         };
         const spliceApi = spliceStr(api, params);
         const { headers, cookies } = generateRequestParams(cookiesStr, spliceApi, '', 'GET');
-        headers['Cookie'] = cookiesToHeader(cookies);
+        setHeaders(headers, cookies);
         const response = await axios.get(this.baseUrl + spliceApi, { headers, ...this.getProxyConfig(proxies) });
         const resJson = response.data;
 
