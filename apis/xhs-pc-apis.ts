@@ -26,12 +26,23 @@ function cookiesToHeader(cookies: Record<string, string>): string {
 
 export class XHSApis {
   private baseUrl = 'https://edith.xiaohongshu.com';
+  private minDelayMs: number;
+
+  constructor(minDelayMs: number = 1600) {
+    this.minDelayMs = minDelayMs;
+  }
+
+  private async randomDelay(): Promise<void> {
+    const delay = this.minDelayMs + Math.random() * this.minDelayMs;
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
 
   async getHomefeedAllChannel(
     cookiesStr: string,
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const api = '/api/sns/web/v1/homefeed/category';
       const { headers, cookies } = generateRequestParams(cookiesStr, api, '', 'GET');
       headers['Cookie'] = cookiesToHeader(cookies);
@@ -52,6 +63,7 @@ export class XHSApis {
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const api = '/api/sns/web/v1/homefeed';
       const data = {
         cursor_score: cursorScore,
@@ -125,6 +137,7 @@ export class XHSApis {
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const api = '/api/sns/web/v1/user/otherinfo';
       const params = { target_user_id: userId };
       const spliceApi = spliceStr(api, params);
@@ -143,6 +156,7 @@ export class XHSApis {
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const api = '/api/sns/web/v1/user/selfinfo';
       const { headers, cookies } = generateRequestParams(cookiesStr, api, '', 'GET');
       headers['Cookie'] = cookiesToHeader(cookies);
@@ -163,6 +177,7 @@ export class XHSApis {
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const api = '/api/sns/web/v1/user_posted';
       const params = {
         num: '30',
@@ -229,6 +244,7 @@ export class XHSApis {
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const parsedUrl = new URL(url);
       const pathParts = parsedUrl.pathname.split('/');
       const noteId = pathParts[pathParts.length - 1];
@@ -271,6 +287,7 @@ export class XHSApis {
     proxies?: Record<string, string>
   ): Promise<ApiResult> {
     try {
+      await this.randomDelay();
       const sortTypeMap: Record<number, string> = {
         0: 'general',
         1: 'time_descending',
@@ -383,6 +400,7 @@ export class XHSApis {
     const allComments: CommentInfo[] = [];
     let cursor = '';
     try {
+      await this.randomDelay();
       const parsedUrl = new URL(url);
       const pathParts = parsedUrl.pathname.split('/');
       const noteId = pathParts[pathParts.length - 1];

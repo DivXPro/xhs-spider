@@ -124,23 +124,36 @@ program
     const noteList: any[] = [];
     const allNotes = (result.data || []).slice(0, num);
 
-    for (const simpleNote of allNotes) {
-      const noteUrl = `https://www.xiaohongshu.com/explore/${simpleNote.note_id}?xsec_token=${simpleNote.xsec_token}`;
-      const noteResult = await xhsApis.getNoteInfo(noteUrl, cookies);
-      if (noteResult.success) {
-        try {
-          const noteData = noteResult.data?.data?.items?.[0];
-          if (noteData) {
-            noteData.url = noteUrl;
-            const noteInfo = handleNoteInfo(noteData);
-            noteList.push(noteInfo);
+    // Process notes in batches if num > 30
+    const batchSize = 30;
+    const batchCount = Math.ceil(allNotes.length / batchSize);
 
-            if (options.download) {
-              await downloadNote(noteInfo, basePath.media, 'all');
+    for (let i = 0; i < allNotes.length; i += batchSize) {
+      const batch = allNotes.slice(i, i + batchSize);
+      const batchIndex = Math.floor(i / batchSize) + 1;
+
+      if (batchCount > 1) {
+        console.error(`处理第 ${batchIndex}/${batchCount} 批...`);
+      }
+
+      for (const simpleNote of batch) {
+        const noteUrl = `https://www.xiaohongshu.com/explore/${simpleNote.note_id}?xsec_token=${simpleNote.xsec_token}`;
+        const noteResult = await xhsApis.getNoteInfo(noteUrl, cookies);
+        if (noteResult.success) {
+          try {
+            const noteData = noteResult.data?.data?.items?.[0];
+            if (noteData) {
+              noteData.url = noteUrl;
+              const noteInfo = handleNoteInfo(noteData);
+              noteList.push(noteInfo);
+
+              if (options.download) {
+                await downloadNote(noteInfo, basePath.media, 'all');
+              }
             }
+          } catch (e: any) {
+            console.error(`处理笔记 ${noteUrl} 失败: ${e.message}`);
           }
-        } catch (e: any) {
-          console.error(`处理笔记 ${noteUrl} 失败: ${e.message}`);
         }
       }
     }
@@ -192,26 +205,38 @@ program
     // Filter only note types
     const notes = (searchResult.data || []).filter((n: any) => n.model_type === 'note');
 
-    // Get full note info
+    // Process notes in batches if num > 30
     const noteList: any[] = [];
+    const batchSize = 30;
+    const totalNotes = notes.slice(0, num);
+    const batchCount = Math.ceil(totalNotes.length / batchSize);
 
-    for (const note of notes.slice(0, num)) {
-      const noteUrl = `https://www.xiaohongshu.com/explore/${note.id}?xsec_token=${note.xsec_token}`;
-      const noteResult = await xhsApis.getNoteInfo(noteUrl, cookies);
-      if (noteResult.success) {
-        try {
-          const noteData = noteResult.data?.data?.items?.[0];
-          if (noteData) {
-            noteData.url = noteUrl;
-            const noteInfo = handleNoteInfo(noteData);
-            noteList.push(noteInfo);
+    for (let i = 0; i < totalNotes.length; i += batchSize) {
+      const batch = totalNotes.slice(i, i + batchSize);
+      const batchIndex = Math.floor(i / batchSize) + 1;
 
-            if (options.download) {
-              await downloadNote(noteInfo, basePath.media, 'all');
+      if (batchCount > 1) {
+        console.error(`处理第 ${batchIndex}/${batchCount} 批...`);
+      }
+
+      for (const note of batch) {
+        const noteUrl = `https://www.xiaohongshu.com/explore/${note.id}?xsec_token=${note.xsec_token}`;
+        const noteResult = await xhsApis.getNoteInfo(noteUrl, cookies);
+        if (noteResult.success) {
+          try {
+            const noteData = noteResult.data?.data?.items?.[0];
+            if (noteData) {
+              noteData.url = noteUrl;
+              const noteInfo = handleNoteInfo(noteData);
+              noteList.push(noteInfo);
+
+              if (options.download) {
+                await downloadNote(noteInfo, basePath.media, 'all');
+              }
             }
+          } catch (e: any) {
+            console.error(`处理笔记 ${noteUrl} 失败: ${e.message}`);
           }
-        } catch (e: any) {
-          console.error(`处理笔记 ${noteUrl} 失败: ${e.message}`);
         }
       }
     }
