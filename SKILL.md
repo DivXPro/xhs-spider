@@ -248,12 +248,14 @@ xhs search "旅游攻略" -n 30 -f md > results.md
 
 ## Data Output
 
-下载的媒体文件保存在 `datas/media_datas/{笔记ID}/` 目录，包含：
+下载的媒体文件保存在 **项目根目录** 下的 `datas/media_datas/{笔记ID}/` 目录，包含：
 - `note.yaml` - 笔记完整信息（YAML 格式，程序处理用）
 - `NOTE.md` - 笔记 Markdown 详情
 - `comments.yaml` - 评论数据（使用 `--download` 参数时生成）
 - `image_0.jpg`, `image_1.jpg` - 图片
 - `video.mp4` - 视频（如果有）
+
+**注意**：Agent 执行命令时需确保运行在项目根目录（`package.json` 所在目录），而非 `.claude/` 目录，否则数据会保存到错误位置。
 
 ---
 
